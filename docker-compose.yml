@@ -1,0 +1,39 @@
+version: '3'
+services:
+  prometheus:
+    image: prom/prometheus:v2.40.1
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    volumes:
+      - ./infra/metrics/prometheus/:/etc/prometheus/
+    ports:
+      - "9090:9090"
+    networks:
+      - dev
+
+  grafana:
+    image: grafana/grafana:9.2.4
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./infra/metrics/grafana/data/:/var/lib/grafana
+      - ./infra/metrics/grafana/:/etc/grafana/provisioning/
+    networks:
+      - dev
+
+  normal_process:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/normal_process/Dockerfile
+    networks:
+      - dev
+    ports:
+      - "8085:2112"
+
+
+networks:
+  dev:
+    driver: bridge
