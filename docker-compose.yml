@@ -20,7 +20,8 @@ services:
       - "3000:3000"
     volumes:
       - ./infra/metrics/grafana/data/:/var/lib/grafana
-      - ./infra/metrics/grafana/:/etc/grafana/provisioning/
+      - ./infra/metrics/grafana/provisioning/dashboards/:/etc/grafana/provisioning/
+      - ./infra/metrics/grafana/config/:/etc/grafana
     networks:
       - dev
 
@@ -30,8 +31,21 @@ services:
       dockerfile: ./dockerfiles/normal_process/Dockerfile
     networks:
       - dev
+    volumes:
+      - ./results:/tmp/goperformance
     ports:
       - "8085:2112"
+
+  goroutines_process:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/go_routines/Dockerfile
+    networks:
+      - dev
+    volumes:
+      - ./results:/tmp/goperformance
+    ports:
+      - "8086:2112"
 
 
 networks:

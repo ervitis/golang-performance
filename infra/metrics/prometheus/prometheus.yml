@@ -3,11 +3,16 @@ global:
   evaluation_interval: 10s
 
 scrape_configs:
-  - job_name: 'prometheus'
+  - job_name: 'normal_process'
     scrape_interval: 5s
     metrics_path: '/metrics'
     static_configs:
       - targets: ['normal_process:2112']
+  - job_name: 'goroutines_process'
+    scrape_interval: 5s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: [ 'goroutines_process:2112' ]
 
 remote_write:
   - url: 'http://grafana:3000'

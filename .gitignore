@@ -104,3 +104,4 @@ tags
 [._]*.un~
 
 infra/metrics/grafana/data
+results
