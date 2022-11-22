@@ -41,7 +41,6 @@ type FileOperator interface {
 }
 
 func NewFileOperator(writePathFile string) FileOperator {
-	// wt, err := os.Create("/tmp/myfulldata.csv")
 	wt, err := os.Create(writePathFile)
 	if err != nil {
 		panic(fmt.Errorf("FileOperator: create temp file for writing error: %w", err))
@@ -268,4 +267,129 @@ func (f *fileOperator) OpenFilesGoRoutine(folderPath string) <-chan error {
 	wg.Wait()
 
 	return errCh
+}
+
+type UserStream struct {
+	file  *os.File
+	users Users
+}
+
+type fileOperatorChannel struct {
+	writeFile *os.File
+}
+
+type FileOperatorChannel interface {
+	OpenFiles(folderPath string) <-chan UserStream
+	Read(in <-chan UserStream) <-chan UserStream
+	Write(done chan struct{}, in <-chan UserStream)
+}
+
+func NewFileOperatorChannel(writePathFile string) FileOperatorChannel {
+	wt, err := os.Create(writePathFile)
+	if err != nil {
+		panic(fmt.Errorf("FileOperator: create temp file for writing error: %w", err))
+	}
+	fmt.Printf("I will write data in the file %s\n", wt.Name())
+
+	fo := &fileOperatorChannel{writeFile: wt}
+	return fo
+}
+
+func (f *fileOperatorChannel) OpenFiles(folderPath string) <-chan UserStream {
+	stream := make(chan UserStream)
+
+	p, err := filepath.Abs(folderPath)
+	if err != nil {
+		panic(err)
+	}
+
+	paths := make([]string, 0)
+
+	if err := filepath.WalkDir(p, func(path string, d fs.DirEntry, err error) error {
+		if d.IsDir() {
+			return nil
+		}
+		paths = append(paths, path)
+		return nil
+	}); err != nil {
+		panic(fmt.Errorf("FileOperator: walk inside directory %s: %w", folderPath, err))
+	}
+
+	go func() {
+		for _, p := range paths {
+			t, err := os.Open(p)
+			if err != nil {
+				log.Printf("Error: file %s: err:%v\n", p, err)
+				return
+			}
+			stream <- UserStream{file: t}
+		}
+		close(stream)
+	}()
+
+	return stream
+}
+
+func (f *fileOperatorChannel) Read(in <-chan UserStream) <-chan UserStream {
+	out := make(chan UserStream, 5) // after 5 items the channel blocks
+
+	go func() {
+		for stream := range in {
+			r := csv.NewReader(stream.file)
+			r.Comment = '#'
+			r.Comma = ','
+
+			d, err := r.ReadAll()
+			if err != nil {
+				return
+			}
+
+			users := make(Users, 0)
+
+			for i, l := range d {
+				if i == 0 {
+					continue
+				}
+				id, _ := strconv.Atoi(l[0])
+				td, _ := time.Parse("2006/01/02", l[6])
+
+				users = append(users, User{
+					ID:        id,
+					FirstName: l[1],
+					LastName:  l[2],
+					Email:     l[3],
+					Gender:    l[4],
+					Country:   l[5],
+					Birthday:  td,
+				})
+			}
+
+			out <- UserStream{
+				file:  stream.file,
+				users: users,
+			}
+		}
+		close(out)
+	}()
+
+	return out
+}
+
+func (f *fileOperatorChannel) Write(done chan struct{}, in <-chan UserStream) {
+	w := csv.NewWriter(f.writeFile)
+	d := make([][]string, 0)
+	d = append(d, []string{"ID", "Name", "Email", "Country", "Gender", "Birthday"})
+
+	go func() {
+		defer close(done)
+		for stream := range in {
+			for _, user := range stream.users {
+				d = append(d, user.ToArray())
+			}
+			if err := w.WriteAll(d); err != nil {
+				log.Printf("error writing file with data %v: %v\n", d, err)
+			}
+		}
+		done <- struct{}{}
+	}()
 }

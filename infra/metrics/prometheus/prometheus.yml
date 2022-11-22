@@ -13,6 +13,11 @@ scrape_configs:
     metrics_path: '/metrics'
     static_configs:
       - targets: [ 'goroutines_process:2112' ]
+  - job_name: 'channels_process'
+    scrape_interval: 5s
+    metrics_path: '/metrics'
+    static_configs:
+      - targets: [ 'channels_process:2112' ]
 
 remote_write:
   - url: 'http://grafana:3000'

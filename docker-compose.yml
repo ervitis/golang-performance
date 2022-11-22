@@ -47,6 +47,17 @@ services:
     ports:
       - "8086:2112"
 
+  channels_process:
+    build:
+      context: .
+      dockerfile: ./dockerfiles/channels/Dockerfile
+    networks:
+      - dev
+    volumes:
+      - ./results:/tmp/goperformance
+    ports:
+      - "8087:2112"
+
 
 networks:
   dev:
