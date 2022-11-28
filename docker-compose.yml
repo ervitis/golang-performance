@@ -20,8 +20,8 @@ services:
       - "3000:3000"
     volumes:
       - ./infra/metrics/grafana/data/:/var/lib/grafana
-      - ./infra/metrics/grafana/provisioning/dashboards/:/etc/grafana/provisioning/
       - ./infra/metrics/grafana/config/:/etc/grafana
+      - ./infra/metrics/grafana/dashboards/:/etc/grafana/provisioning/dashboards/
     networks:
       - dev
 

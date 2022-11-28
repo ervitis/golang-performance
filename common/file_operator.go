@@ -45,7 +45,6 @@ func NewFileOperator(writePathFile string) FileOperator {
 	if err != nil {
 		panic(fmt.Errorf("FileOperator: create temp file for writing error: %w", err))
 	}
-	fmt.Printf("I will write data in the file %s\n", wt.Name())
 
 	fo := &fileOperator{writeFile: wt}
 	return fo
@@ -289,7 +288,6 @@ func NewFileOperatorChannel(writePathFile string) FileOperatorChannel {
 	if err != nil {
 		panic(fmt.Errorf("FileOperator: create temp file for writing error: %w", err))
 	}
-	fmt.Printf("I will write data in the file %s\n", wt.Name())
 
 	fo := &fileOperatorChannel{writeFile: wt}
 	return fo

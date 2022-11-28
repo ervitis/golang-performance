@@ -6,7 +6,7 @@ COPY . .
 
 RUN go mod download && \
     cd cmd/go_routines && \
-    CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o app .
+    CGO_ENABLED=0 GOOS=linux go build -o app .
 
 FROM debian:11.5-slim
 

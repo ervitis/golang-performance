@@ -19,6 +19,8 @@ func main() {
 	router := http.NewServeMux()
 	router.Handle(metricsHandler.Address.Url, metricsHandler.Handler)
 
+	processMetrics := metrics.NewProcessTimeMetric(metrics.ExecutionTimeName)
+
 	server := http.Server{
 		Addr:    fmt.Sprintf(":%d", metricsHandler.Address.Port),
 		Handler: router,
@@ -48,7 +50,10 @@ func main() {
 			case <-common.SignalHandler:
 				log.Println("Killing...")
 			default:
+				start := time.Now()
 				run()
+				end := time.Now()
+				processMetrics.Set(end.Sub(start).Seconds())
 				const min, max = 1, 8
 				rndWait := rand.New(rand.NewSource(time.Now().Unix())).Intn(max-min) + min
 				time.Sleep(time.Duration(rndWait) * time.Second)
