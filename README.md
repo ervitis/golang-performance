@@ -27,3 +27,5 @@ docker-compose up --build
 Access to Grafana page:
 
 > localhost:3000
+
+Import the dashboard from the file in `infra/metrics/grafana/dashboards/panels.json` into Grafana
