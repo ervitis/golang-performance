@@ -131,7 +131,6 @@ func (f *fileOperator) Read() (Users, error) {
 func (f *fileOperator) Write(users Users) error {
 	w := csv.NewWriter(f.writeFile)
 	d := make([][]string, 0)
-	d = append(d, []string{"ID", "Name", "Email", "Country", "Gender", "Birthday"})
 	for _, user := range users {
 		d = append(d, user.ToArray())
 	}
@@ -376,7 +375,6 @@ func (f *fileOperatorChannel) Read(in <-chan UserStream) <-chan UserStream {
 func (f *fileOperatorChannel) Write(done chan struct{}, in <-chan UserStream) {
 	w := csv.NewWriter(f.writeFile)
 	d := make([][]string, 0)
-	d = append(d, []string{"ID", "Name", "Email", "Country", "Gender", "Birthday"})
 
 	go func() {
 		defer close(done)
