@@ -32,7 +32,7 @@ services:
     networks:
       - dev
     volumes:
-      - ./results:/tmp/goperformance
+      - ./results:/tmp/goperformance/
     ports:
       - "8085:2112"
 
@@ -43,7 +43,7 @@ services:
     networks:
       - dev
     volumes:
-      - ./results:/tmp/goperformance
+      - ./results:/tmp/goperformance/
     ports:
       - "8086:2112"
 
@@ -54,7 +54,7 @@ services:
     networks:
       - dev
     volumes:
-      - ./results:/tmp/goperformance
+      - ./results:/tmp/gochannel/
     ports:
       - "8087:2112"
 

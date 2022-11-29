@@ -12,7 +12,6 @@ import (
 )
 
 func main() {
-	common.InitSignal()
 	done := make(chan struct{})
 
 	metricsHandler := metrics.NewMetricsHandler()
@@ -25,8 +24,9 @@ func main() {
 		Addr:    fmt.Sprintf(":%d", metricsHandler.Address.Port),
 		Handler: router,
 	}
+	defer close(done)
 	go func() {
-		<-common.SignalHandler
+		<-common.SignalHandler.InterruptSignal
 		log.Println("Shutting down server")
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
@@ -34,7 +34,7 @@ func main() {
 		if err := server.Shutdown(ctx); err != nil {
 			log.Println(err)
 		}
-		close(done)
+		done <- struct{}{}
 	}()
 
 	go func() {
@@ -46,23 +46,17 @@ func main() {
 
 	go func() {
 		for {
-			select {
-			case <-common.SignalHandler:
-				log.Println("Killing...")
-			default:
-				start := time.Now()
-				run()
-				end := time.Now()
-				processMetrics.Set(end.Sub(start).Seconds())
-				const min, max = 1, 8
-				rndWait := rand.New(rand.NewSource(time.Now().Unix())).Intn(max-min) + min
-				time.Sleep(time.Duration(rndWait) * time.Second)
-			}
+			start := time.Now()
+			run()
+			end := time.Now()
+			processMetrics.Set(end.Sub(start).Seconds())
+			const min, max = 1, 8
+			rndWait := rand.New(rand.NewSource(time.Now().Unix())).Intn(max-min) + min
+			time.Sleep(time.Duration(rndWait) * time.Second)
 		}
 	}()
 
 	<-done
-	log.Println("End process")
 }
 
 func run() {

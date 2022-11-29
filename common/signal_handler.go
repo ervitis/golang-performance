@@ -6,8 +6,16 @@ import (
 	"syscall"
 )
 
-var SignalHandler = make(chan os.Signal)
+type Signals struct {
+	InterruptSignal chan os.Signal
+}
 
-func InitSignal() {
-	signal.Notify(SignalHandler, syscall.SIGINT, syscall.SIGKILL, syscall.SIGTERM)
+var SignalHandler Signals
+
+func init() {
+	SignalHandler = Signals{
+		InterruptSignal: make(chan os.Signal, 1),
+	}
+
+	signal.Notify(SignalHandler.InterruptSignal, os.Interrupt, os.Kill, syscall.SIGTERM)
 }
