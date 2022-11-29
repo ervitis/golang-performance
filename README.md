@@ -9,3 +9,21 @@ Read multiple CSV files with the following header data:
 - gender (string)
 - country (string)
 - birthday (date YYYY/MM/DD)
+
+## HowTo
+
+### Requirements:
+
+- Docker
+- Golang 1.17 up
+- Docker compose
+
+### Execution
+
+```bash
+docker-compose up --build
+```
+
+Access to Grafana page:
+
+> localhost:3000
